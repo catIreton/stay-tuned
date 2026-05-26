@@ -1,0 +1,574 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --crt-green: #39ff14;
+    --crt-amber: #ffb000;
+    --crt-red: #ff3c3c;
+    --crt-blue: #4fc3f7;
+    --crt-dim: rgba(57,255,20,0.45);
+    --screen-bg: #0a0f0a;
+    --panel-bg: #111811;
+  }
+
+  .tv-shell {
+    background: #2a2218;
+    border-radius: 18px;
+    padding: 28px 28px 20px;
+    border: 3px solid #1a1510;
+    box-shadow: inset 0 2px 0 #3a3228;
+    font-family: 'VT323', monospace;
+    color: var(--crt-green);
+  }
+
+  .screen {
+    background: var(--screen-bg);
+    border-radius: 10px;
+    border: 3px solid #0d1a0d;
+    padding: 16px;
+    min-height: 520px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .screen::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .header-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--crt-dim);
+  }
+
+  .logo-text {
+    font-family: 'VT323', monospace;
+    font-size: 28px;
+    color: var(--crt-green);
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px var(--crt-green);
+    line-height: 1;
+  }
+
+  .logo-badge {
+    background: var(--crt-green);
+    color: var(--screen-bg);
+    font-family: 'VT323', monospace;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    letter-spacing: 1px;
+  }
+
+  .search-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .crt-input {
+    flex: 1;
+    background: #050f05;
+    border: 1px solid var(--crt-dim);
+    color: var(--crt-green);
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    outline: none;
+    letter-spacing: 1px;
+  }
+  .crt-input:focus { border-color: var(--crt-green); box-shadow: 0 0 6px var(--crt-dim); }
+  .crt-input::placeholder { color: rgba(57,255,20,0.3); }
+
+  .crt-btn {
+    background: transparent;
+    border: 1px solid var(--crt-green);
+    color: var(--crt-green);
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: background 0.1s;
+  }
+  .crt-btn:hover { background: rgba(57,255,20,0.12); }
+  .crt-btn:active { background: rgba(57,255,20,0.22); }
+  .crt-btn.amber { border-color: var(--crt-amber); color: var(--crt-amber); }
+  .crt-btn.amber:hover { background: rgba(255,176,0,0.12); }
+  .crt-btn.red { border-color: var(--crt-red); color: var(--crt-red); }
+  .crt-btn.red:hover { background: rgba(255,60,60,0.12); }
+
+  .section-label {
+    font-size: 13px;
+    color: rgba(57,255,20,0.5);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .search-results {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+  .search-results::-webkit-scrollbar { width: 4px; }
+  .search-results::-webkit-scrollbar-track { background: #050f05; }
+  .search-results::-webkit-scrollbar-thumb { background: var(--crt-dim); }
+
+  .result-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border: 1px solid rgba(57,255,20,0.15);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: border-color 0.1s, background 0.1s;
+  }
+  .result-row:hover { border-color: var(--crt-green); background: rgba(57,255,20,0.05); }
+
+  .result-name { font-size: 20px; flex: 1; }
+  .result-year { font-size: 16px; color: rgba(57,255,20,0.5); }
+  .result-network { font-size: 15px; color: var(--crt-amber); }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+  .tab {
+    font-family: 'VT323', monospace;
+    font-size: 17px;
+    padding: 4px 12px;
+    border: 1px solid rgba(57,255,20,0.3);
+    border-radius: 3px;
+    cursor: pointer;
+    color: rgba(57,255,20,0.6);
+    letter-spacing: 1px;
+    background: transparent;
+  }
+  .tab.active { border-color: var(--crt-green); color: var(--crt-green); background: rgba(57,255,20,0.08); }
+
+  .show-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 340px;
+    overflow-y: auto;
+  }
+  .show-list::-webkit-scrollbar { width: 4px; }
+  .show-list::-webkit-scrollbar-track { background: #050f05; }
+  .show-list::-webkit-scrollbar-thumb { background: var(--crt-dim); }
+
+  .show-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid rgba(57,255,20,0.18);
+    border-radius: 4px;
+    background: rgba(57,255,20,0.02);
+    transition: border-color 0.15s;
+  }
+  .show-card:hover { border-color: rgba(57,255,20,0.45); }
+
+  .show-thumb {
+    width: 38px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 2px;
+    border: 1px solid rgba(57,255,20,0.2);
+    flex-shrink: 0;
+    filter: sepia(1) hue-rotate(80deg) saturate(0.7) brightness(0.85);
+  }
+  .show-thumb-placeholder {
+    width: 38px;
+    height: 52px;
+    background: #0d1a0d;
+    border: 1px solid rgba(57,255,20,0.2);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: rgba(57,255,20,0.25);
+    font-size: 20px;
+  }
+
+  .show-info { flex: 1; min-width: 0; }
+  .show-title { font-size: 21px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .show-meta { font-size: 15px; color: rgba(57,255,20,0.5); margin-top: 1px; }
+  .show-next { font-size: 15px; color: var(--crt-amber); margin-top: 2px; }
+  .show-next.ended { color: var(--crt-red); }
+  .show-next.airing { color: var(--crt-blue); }
+
+  .status-pill {
+    font-size: 13px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 3px;
+  }
+  .pill-watching { border-color: var(--crt-green); color: var(--crt-green); }
+  .pill-waiting  { border-color: var(--crt-amber); color: var(--crt-amber); }
+  .pill-dropped  { border-color: var(--crt-red);   color: var(--crt-red); }
+
+  .show-actions { display: flex; gap: 5px; align-items: center; flex-shrink: 0; align-self: center; }
+  .icon-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: rgba(57,255,20,0.4);
+    font-size: 18px;
+    padding: 2px 4px;
+    font-family: 'VT323', monospace;
+    letter-spacing: 0;
+    transition: color 0.1s;
+  }
+  .icon-btn:hover { color: var(--crt-red); }
+  .icon-btn.cycle:hover { color: var(--crt-amber); }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(57,255,20,0.3);
+    font-size: 20px;
+    letter-spacing: 1px;
+  }
+
+  .status-bar {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--crt-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .status-msg { font-size: 16px; color: rgba(57,255,20,0.5); letter-spacing: 1px; }
+  .counts { display: flex; gap: 12px; font-size: 16px; }
+  .count-item { color: rgba(57,255,20,0.5); }
+  .count-item span { color: var(--crt-green); }
+
+  .blink { animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .airing-soon-banner {
+    background: rgba(79,195,247,0.08);
+    border: 1px solid rgba(79,195,247,0.3);
+    border-radius: 4px;
+    padding: 7px 10px;
+    margin-bottom: 10px;
+    font-size: 17px;
+    color: var(--crt-blue);
+    letter-spacing: 1px;
+    display: none;
+  }
+</style>
+
+<div class="tv-shell" role="main">
+  <h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">TV Show Tracker — retro CRT interface to search and track your shows</h2>
+
+  <div class="screen">
+    <div class="header-bar">
+      <div class="logo-text">&#9654; TUNED IN</div>
+      <div class="logo-badge">TV TRACKER</div>
+    </div>
+
+    <div class="search-row">
+      <input class="crt-input" id="searchInput" type="text" placeholder="SEARCH FOR A SHOW..." autocomplete="off" aria-label="Search for a TV show" />
+      <button class="crt-btn" id="searchBtn" aria-label="Search">[ SCAN ]</button>
+    </div>
+
+    <div class="search-results" id="searchResults" role="listbox" aria-label="Search results"></div>
+
+    <div class="airing-soon-banner" id="airingSoonBanner"></div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-filter="all" role="tab" aria-selected="true">ALL</button>
+      <button class="tab" data-filter="watching" role="tab" aria-selected="false">WATCHING</button>
+      <button class="tab" data-filter="waiting" role="tab" aria-selected="false">WAITING</button>
+      <button class="tab" data-filter="dropped" role="tab" aria-selected="false">DROPPED</button>
+    </div>
+
+    <div class="show-list" id="showList" role="list"></div>
+
+    <div class="status-bar">
+      <div class="status-msg" id="statusMsg">READY<span class="blink">_</span></div>
+      <div class="counts" id="counts"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY = 'tunedIn_shows_v1';
+let shows = JSON.parse(localStorage.getItem(KEY) || '[]');
+let currentFilter = 'all';
+let searchTimer = null;
+
+function save() { localStorage.setItem(KEY, JSON.stringify(shows)); }
+
+function setStatus(msg) {
+  document.getElementById('statusMsg').innerHTML = msg + '<span class="blink">_</span>';
+}
+
+function stripHtml(html) {
+  if (!html) return '';
+  return html.replace(/<[^>]+>/g, '');
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr + 'T00:00:00');
+  const diff = Math.round((d - new Date()) / 86400000);
+  const opts = { month: 'short', day: 'numeric', year: 'numeric' };
+  const formatted = d.toLocaleDateString('en-US', opts).toUpperCase();
+  if (diff < 0) return { text: 'AIRED ' + formatted, cls: '' };
+  if (diff === 0) return { text: 'AIRS TODAY!', cls: 'airing' };
+  if (diff <= 7) return { text: 'AIRS IN ' + diff + 'D — ' + formatted, cls: 'airing' };
+  return { text: 'NEXT: ' + formatted, cls: '' };
+}
+
+async function searchShows(q) {
+  if (!q.trim()) { hideResults(); return; }
+  setStatus('SCANNING...');
+  try {
+    const res = await fetch('https://api.tvmaze.com/search/shows?q=' + encodeURIComponent(q));
+    const data = await res.json();
+    renderResults(data.slice(0, 6));
+    setStatus('READY');
+  } catch(e) {
+    setStatus('SIGNAL LOST');
+  }
+}
+
+function hideResults() {
+  const el = document.getElementById('searchResults');
+  el.style.display = 'none';
+  el.innerHTML = '';
+}
+
+function renderResults(results) {
+  const el = document.getElementById('searchResults');
+  if (!results.length) {
+    el.style.display = 'flex';
+    el.innerHTML = '<div style="padding:10px;color:rgba(57,255,20,0.4);font-size:18px;letter-spacing:1px">NO SIGNAL — TRY ANOTHER TITLE</div>';
+    return;
+  }
+  el.style.display = 'flex';
+  el.innerHTML = results.map(r => {
+    const show = r.show;
+    const year = show.premiered ? show.premiered.slice(0,4) : '????';
+    const network = show.network?.name || show.webChannel?.name || '';
+    return `<div class="result-row" role="option" tabindex="0" data-id="${show.id}" onclick="addShow(${show.id})">
+      <span class="result-name">${show.name}</span>
+      <span class="result-year">${year}</span>
+      ${network ? `<span class="result-network">${network}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function addShow(id) {
+  if (shows.find(s => s.id === id)) { setStatus('ALREADY IN YOUR LIST'); hideResults(); return; }
+  setStatus('LOADING SHOW DATA...');
+  hideResults();
+  document.getElementById('searchInput').value = '';
+  try {
+    const [showRes, nextRes] = await Promise.all([
+      fetch('https://api.tvmaze.com/shows/' + id + '?embed=nextepisode'),
+      fetch('https://api.tvmaze.com/shows/' + id + '/episodes')
+    ]);
+    const show = await showRes.json();
+    let lastSeason = null, totalEps = null;
+    if (showRes.ok) {
+      totalEps = show.runtime;
+    }
+    try {
+      const eps = await nextRes.json();
+      if (Array.isArray(eps) && eps.length) lastSeason = eps[eps.length-1].season;
+    } catch(e) {}
+
+    const nextEp = show._embedded?.nextepisode;
+    shows.unshift({
+      id: show.id,
+      name: show.name,
+      image: show.image?.medium || null,
+      status: show.status,
+      network: show.network?.name || show.webChannel?.name || '',
+      premiered: show.premiered,
+      seasons: lastSeason,
+      nextEpDate: nextEp?.airdate || null,
+      nextEpName: nextEp?.name || null,
+      nextEpSeason: nextEp?.season || null,
+      nextEpNum: nextEp?.number || null,
+      myStatus: 'watching',
+      added: Date.now()
+    });
+    save();
+    renderList();
+    setStatus('ADDED: ' + show.name.toUpperCase());
+  } catch(e) {
+    setStatus('SIGNAL ERROR — RETRY');
+  }
+}
+
+function cycleStatus(id) {
+  const show = shows.find(s => s.id === id);
+  if (!show) return;
+  const cycle = { watching: 'waiting', waiting: 'dropped', dropped: 'watching' };
+  show.myStatus = cycle[show.myStatus];
+  save();
+  renderList();
+}
+
+function removeShow(id) {
+  shows = shows.filter(s => s.id !== id);
+  save();
+  renderList();
+  setStatus('REMOVED');
+}
+
+async function refreshShow(id) {
+  const show = shows.find(s => s.id === id);
+  if (!show) return;
+  setStatus('REFRESHING...');
+  try {
+    const res = await fetch('https://api.tvmaze.com/shows/' + id + '?embed=nextepisode');
+    const data = await res.json();
+    const nextEp = data._embedded?.nextepisode;
+    show.status = data.status;
+    show.nextEpDate = nextEp?.airdate || null;
+    show.nextEpName = nextEp?.name || null;
+    show.nextEpSeason = nextEp?.season || null;
+    show.nextEpNum = nextEp?.number || null;
+    show.image = data.image?.medium || show.image;
+    save();
+    renderList();
+    setStatus('REFRESHED: ' + show.name.toUpperCase());
+  } catch(e) {
+    setStatus('SIGNAL ERROR');
+  }
+}
+
+function renderList() {
+  const list = document.getElementById('showList');
+  const filtered = currentFilter === 'all' ? shows : shows.filter(s => s.myStatus === currentFilter);
+
+  updateCounts();
+  checkAiringSoon();
+
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-state">${currentFilter === 'all' ? 'NO SHOWS YET — SEARCH TO ADD ONE' : 'NOTHING IN THIS CATEGORY'}</div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(show => {
+    const pillCls = 'pill-' + show.myStatus;
+    const statusLabels = { watching: 'WATCHING', waiting: 'WAITING', dropped: 'DROPPED' };
+
+    let nextLine = '';
+    if (show.nextEpDate) {
+      const fd = formatDate(show.nextEpDate);
+      let epInfo = '';
+      if (show.nextEpSeason && show.nextEpNum) epInfo = ` S${String(show.nextEpSeason).padStart(2,'0')}E${String(show.nextEpNum).padStart(2,'0')}`;
+      nextLine = `<div class="show-next ${fd.cls}">${fd.text}${epInfo}</div>`;
+    } else if (show.status === 'Ended') {
+      nextLine = `<div class="show-next ended">SERIES ENDED</div>`;
+    } else if (show.status === 'In Development') {
+      nextLine = `<div class="show-next">IN DEVELOPMENT</div>`;
+    } else {
+      nextLine = `<div class="show-next" style="color:rgba(57,255,20,0.35)">DATE TBD</div>`;
+    }
+
+    const thumb = show.image
+      ? `<img class="show-thumb" src="${show.image}" alt="${show.name} poster" loading="lazy" />`
+      : `<div class="show-thumb-placeholder"><i class="ti ti-device-tv" aria-hidden="true"></i></div>`;
+
+    const metaParts = [];
+    if (show.network) metaParts.push(show.network);
+    if (show.seasons) metaParts.push(show.seasons + ' SEASONS');
+    if (show.premiered) metaParts.push(show.premiered.slice(0,4));
+
+    return `<div class="show-card" role="listitem">
+      ${thumb}
+      <div class="show-info">
+        <div class="show-title">${show.name.toUpperCase()}</div>
+        ${metaParts.length ? `<div class="show-meta">${metaParts.join(' · ')}</div>` : ''}
+        ${nextLine}
+      </div>
+      <span class="status-pill ${pillCls}">${statusLabels[show.myStatus]}</span>
+      <div class="show-actions">
+        <button class="icon-btn cycle" title="Cycle status" onclick="cycleStatus(${show.id})" aria-label="Cycle status for ${show.name}">&#8635;</button>
+        <button class="icon-btn" title="Refresh data" onclick="refreshShow(${show.id})" aria-label="Refresh ${show.name}" style="color:rgba(79,195,247,0.5)">&#8627;</button>
+        <button class="icon-btn" title="Remove" onclick="removeShow(${show.id})" aria-label="Remove ${show.name}">&#10005;</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateCounts() {
+  const w = shows.filter(s => s.myStatus === 'watching').length;
+  const wa = shows.filter(s => s.myStatus === 'waiting').length;
+  const d = shows.filter(s => s.myStatus === 'dropped').length;
+  document.getElementById('counts').innerHTML =
+    `<span class="count-item">W:<span>${w}</span></span>` +
+    `<span class="count-item" style="color:rgba(255,176,0,0.5)">&#9670;:<span style="color:var(--crt-amber)">${wa}</span></span>` +
+    `<span class="count-item" style="color:rgba(255,60,60,0.4)">X:<span style="color:var(--crt-red)">${d}</span></span>`;
+}
+
+function checkAiringSoon() {
+  const banner = document.getElementById('airingSoonBanner');
+  const soon = shows.filter(s => {
+    if (!s.nextEpDate) return false;
+    const diff = Math.round((new Date(s.nextEpDate + 'T00:00:00') - new Date()) / 86400000);
+    return diff >= 0 && diff <= 3;
+  });
+  if (soon.length) {
+    banner.style.display = 'block';
+    banner.innerHTML = '&#9654; AIRING SOON: ' + soon.map(s => s.name.toUpperCase()).join(' · ');
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+document.getElementById('searchBtn').addEventListener('click', () => {
+  searchShows(document.getElementById('searchInput').value);
+});
+
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') searchShows(e.target.value);
+  clearTimeout(searchTimer);
+  if (e.key !== 'Enter') searchTimer = setTimeout(() => searchShows(e.target.value), 500);
+});
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+    tab.classList.add('active');
+    tab.setAttribute('aria-selected','true');
+    currentFilter = tab.dataset.filter;
+    renderList();
+  });
+});
+
+renderList();
+</script>

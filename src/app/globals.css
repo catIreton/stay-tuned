@@ -1,26 +1,55 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* CRT color tokens — available as Tailwind utilities: text-crt-green, bg-screen-bg, etc. */
+@theme {
+  --color-crt-green: #39ff14;
+  --color-crt-amber: #ffb000;
+  --color-crt-red: #ff3c3c;
+  --color-crt-blue: #4fc3f7;
+  --color-screen-bg: #0a0f0a;
+  --color-panel: #111811;
+  --color-shell: #2a2218;
 }
 
+/* Wire next/font variable into Tailwind font utility: font-vt323 */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-vt323: var(--font-vt323-google);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #0a0f0a;
+  min-height: 100vh;
 }
+
+/* CRT scanline overlay — add .scanlines to the screen element */
+.scanlines {
+  position: relative;
+  overflow: hidden;
+}
+.scanlines::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Blinking cursor */
+.blink {
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* Phosphor-green scrollbar */
+.crt-scroll::-webkit-scrollbar { width: 4px; }
+.crt-scroll::-webkit-scrollbar-track { background: #050f05; }
+.crt-scroll::-webkit-scrollbar-thumb { background: rgba(57, 255, 20, 0.45); }
